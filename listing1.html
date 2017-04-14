@@ -1,0 +1,23 @@
+<div id="game-on">
+   <h1> {{ title }} </h1>
+
+   <span>Current List of players:</span>
+   <ul>
+      <li v-for="player in players">{{ player.name }}</li>
+   </ul>
+</div>
+
+<script src="https://unpkg.com/vue"></script>
+<script>
+   var game_on = new Vue({
+      el: '#game-on',
+      data: {
+      title: 'Game On?',
+         players: [
+            { name: 'John Congdon' },
+            { name: 'Eric Van Johnson' },
+            { name: 'Kevin Reeves' }
+         ]
+      }
+   });
+</script>

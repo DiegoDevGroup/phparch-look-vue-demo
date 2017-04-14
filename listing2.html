@@ -1,0 +1,91 @@
+<html>
+<div id="game-on">
+   <h1> {{ title }} </h1>
+
+   <demo-form v-on:add-player="addPlayerToList"></demo-form>
+   <player-list v-bind:player_list="players"></player-list>
+</div>
+
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+<script src="https://unpkg.com/vue"></script>
+<script type="text/x-template" id="demo-form-template">
+   <div>
+      <div>Name: <input v-model="addedPlayerName"></div>
+      <div>Playing: <select v-model="addedPlayingOption">
+         <option value="0" selected="selected">No</option>
+         <option value="1">Yes</option>
+      </select></div>
+      <button v-on:click="respond">Respond</button>
+   </div>
+</script>
+
+<script>
+   Vue.component('demo-form', {
+      template: '#demo-form-template',
+      data: function () {
+         return {addedPlayerName: '', addedPlayingOption: 1};
+      },
+      methods: {
+         respond() {
+            var newPlayer = {
+               name: this.addedPlayerName,
+               playing: this.addedPlayingOption
+            };
+            this.addedPlayerName = '';
+            this.addedPlayingOption = 1;
+            axios.post('/vue_save.php', newPlayer);
+            this.$emit('add-player', newPlayer);
+         }
+      }
+   });
+   Vue.component('player-list', {
+      template: `
+            <div>
+                <span>Current List of players:</span>
+                <h2>Playing</h2>
+                <ul>
+                    <li
+                        v-for="player in player_list"
+                        v-if="player.playing == 1"
+                    >{{ player.name }}</li>
+                </ul>
+                <h2>Not Playing</h2>
+                <ul>
+                    <li
+                        v-for="player in player_list"
+                        v-if="player.playing == 0"
+                    >{{ player.name }}</li>
+                </ul>
+            </div>`,
+      props: ['player_list']
+   });
+   var game_on = new Vue({
+      el: '#game-on',
+      data: {
+         title: 'Game On?',
+         players: [],
+      },
+      methods: {
+         addPlayerToList(newPlayer) {
+            for (var i = 0, len = this.players.length; i < len; i++) {
+               if (this.players[i].name === newPlayer.name) {
+                   this.players[i].playing = newPlayer.playing;
+                   return;
+               }
+            }
+
+             this.players.push(newPlayer);
+         },
+         refreshPlayerList: function () {
+            var self = this;
+            axios.get('/vue_data.php')
+               .then(function(response) {
+                  self.players = response.data;
+               });
+         }
+      },
+      created: function () {
+         this.refreshPlayerList();
+      }
+   });
+</script>
